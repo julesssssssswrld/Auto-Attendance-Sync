@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Student Dashboard - Auto Attendance Sync</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+    :root{
+      --bg:#fbf7ef;
+      --accent:#2be632;
+      --accent-dark:#19c21a;
+      --text:#111;
+      --muted:#666;
+      --card-border:#111;
+    }
+    body{
+      margin:0;
+      background:var(--bg);
+      font-family:Montserrat;
+      padding:25px;
+      display:flex;
+      justify-content:center;
+    }
+    .wrap{ width:100%; max-width:900px; }
+    h1{ text-align:center; font-size:32px; font-weight:800; }
+    .qr-box{
+      margin:auto;
+      width:220px;height:220px;
+      border:4px solid black;
+      border-radius:12px;
+      display:flex;align-items:center;justify-content:center;
+    }
+    .qr-placeholder{ color:#777;font-weight:600; }
+    table{
+      width:100%; margin-top:25px; border-collapse:collapse;
+    }
+    th{
+      background:var(--accent);
+      padding:12px; border:2px solid black; font-size:20px;
+    }
+    td{
+      padding:12px; border:2px solid black; text-align:center;
+      font-size:18px; background:white;
+    }
+    select,button{
+      padding:10px 15px;
+      margin-top:15px;
+      border-radius:8px;
+      font-weight:600;
+    }
+    button{
+      background:#2be632; border:2px solid #0a8a10; cursor:pointer;
+    }
+</style>
+</head>
+
+<body>
+<div class="wrap">
+
+<h1>STUDENT DASHBOARD</h1>
+
+<div class="qr-box" id="qrBox">
+    <div class="qr-placeholder">QR CODE 😊</div>
+</div>
+
+<div style="text-align:center;margin-top:10px;">
+    <b>Name:</b> <span id="sName">—</span><br>
+    <b>ID Number:</b> <span id="sID">—</span>
+</div>
+
+<div style="text-align:center;">
+    <select id="studentSelect"></select>
+    <button id="showQR">Show QR</button>
+    <button a href="login1.html">LOG OUT </button>
+</div>
+
+<h2 style="margin-top:30px;text-align:center;">Monthly Attendance</h2>
+
+<table>
+    <tr>
+        <th>Month</th>
+        <th>Present</th>
+        <th>Absent</th>
+    </tr>
+    <tbody id="attendanceBody"></tbody>
+</table>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
+
+<script>
+// SAME DATABASE AS TEACHER DASHBOARD
+const students = [
+    { id: '242680', name: 'Pinuela, Britney Ashley C.' },
+    { id: '244556', name: 'De Asis, Keniel Drew D.' },
+    { id: '241156', name: 'Ubas, Mar Julius B.' },
+    { id: '240475', name: 'Tomacas, Jules Ian C.' },
+    { id: '241804', name: 'Espelimbergo, JericaMae B.' },
+    { id: '244437', name: 'Ampuan, Richelle C.' },
+    { id: '244647', name: 'Olchondra, Chrisnel D.' },
+    { id: '243008', name: 'Obrino, Mark O.' },
+    { id: '242288', name: 'Lovino, Carl Joseph T.' },
+    { id: '244872', name: 'Gabito, Rhea D.' },
+    { id: '244574', name: 'Parras, Christian Paul E.' },
+    { id: '242905', name: 'Bido, Zanjoe M.' },
+    { id: '243191', name: 'Pelembergo, Paul Zairosh' },
+    { id: '241666', name: 'Adrayan, Rey-an A.' },
+    { id: '243364', name: 'Arce, Rowecker Brent' },
+    { id: '245866', name: 'Kent Cedrick O. Celajes' },
+    { id: '235828', name: 'Kent Jeanne S. De Leon' },
+    { id: '243644', name: 'Raizalyn Omela' },
+    { id: '241649', name: 'Corong, Jasthen M.' },
+    { id: '240456', name: 'Cardeño, Jose Manuel M.' },
+    { id: '240439', name: 'Magdaraog, Dranreb D.' },
+    { id: '241096', name: 'Martinico, Maris D.' },
+    { id: '241661', name: 'Formaran, John Francis C.' },
+    { id: '245647', name: 'Pajanostan, Stephanie D.' },
+    { id: '246238', name: 'Comia, Regine a.' }
+];
+
+// LOAD ATTENDANCE FROM TEACHER DASHBOARD
+let attendance = JSON.parse(localStorage.getItem("attendance")) || {};
+
+const studentSelect = document.getElementById("studentSelect");
+const sName = document.getElementById("sName");
+const sID = document.getElementById("sID");
+const attendanceBody = document.getElementById("attendanceBody");
+const qrBox = document.getElementById("qrBox");
+
+// ▼ Generate Select Options
+studentSelect.innerHTML = `<option value="">-- Select Student --</option>`;
+students.forEach((s, index)=>{
+    studentSelect.innerHTML += `<option value="${index}">${s.name} — ${s.id}</option>`;
+});
+
+// ▼ QR System
+const qrCanvas = document.createElement("canvas");
+const qr = new QRious({ element: qrCanvas, size: 200 });
+
+// ▼ Show QR
+function showQR(student){
+    qr.value = JSON.stringify({id:student.id});
+    qrBox.innerHTML = `<img src="${qr.toDataURL()}" style="width:90%;height:90%">`;
+}
+
+// ▼ Compute Monthly Attendance Automatically
+function loadMonthlyAttendance(studentID){
+    const logs = attendance[studentID] || {present:20, absent:0};
+
+    const months = {
+        "January": logs.present,
+        "February": logs.present,
+        "March": logs.present,
+        "April": logs.present
+    };
+
+    attendanceBody.innerHTML = "";
+    for(let m in months){
+        attendanceBody.innerHTML += `
+        <tr>
+            <td>${m}</td>
+            <td>${months[m]}</td>
+            <td>${logs.absent}</td>
+        </tr>`;
+    }
+}
+
+// ▼ When Student Selected
+studentSelect.addEventListener("change", ()=>{
+    const idx = studentSelect.value;
+    if(idx === "") return;
+
+    const student = students[idx];
+    sName.textContent = student.name;
+    sID.textContent = student.id;
+
+    showQR(student);
+    loadMonthlyAttendance(student.id);
+});
+
+// ▼ Button show QR
+document.getElementById("showQR").addEventListener("click", ()=>{
+    const idx = studentSelect.value;
+    if(idx === "") return alert("SELECT A STUDENT FIRST");
+    const student = students[idx];
+    showQR(student);
+    loadMonthlyAttendance(student.id);
+});
+
+</script>
+</body>
+</html>

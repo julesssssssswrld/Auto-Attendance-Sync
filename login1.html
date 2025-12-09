@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Login Page</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background: #f3f3f3;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+    }
+    .login-box {
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        width: 400px;
+        box-shadow: 0px 0px 10px rgba(0,0,0,0.2);
+        text-align: center;
+    }
+    input {
+        width: 95%;
+        padding: 10px;
+        margin-top: 10px;
+    }
+    button {
+        margin-top: 15px;
+        width: 100%;
+        padding: 10px;
+        background: #4CAF50;
+        border: none;
+        color: white;
+        cursor: pointer;
+        font-size: 16px;
+    }
+    button:hover {
+        background: #45a049;
+    }
+    .error {
+        color: red;
+        margin-top: 10px;
+    }
+</style>
+</head>
+<body>
+
+<div class="login-box">
+    <h2>Login</h2>
+    <input type="text" id="username" placeholder="Enter Name">
+    <input type="password" id="password" placeholder="Enter ID Number">
+    <button onclick="login()">Login</button>
+    <p id="error" class="error"></p>
+</div>
+
+<script>
+const users = [
+    { id: '242680', name: 'Pinuela, Britney Ashley C.', role: 'student' },
+    { id: '244556', name: 'De Asis, Keniel Drew D.', role: 'student' },
+    { id: '241156', name: 'Ubas, Mar Julius B. Ubas', role: 'student' },
+    { id: '240475', name: 'Tomacas, Jules Ian C.', role: 'student' },
+    { id: '241804', name: 'Espelimbergo, JericaMae B.', role: 'student' },
+    { id: '244437', name: 'Ampuan, Richelle C.', role: 'student' },
+    { id: '244647', name: 'Olchondra, Chrisnel D.', role: 'student' },
+    { id: '243008', name: 'Obrino, Mark O.', role: 'student' },
+    { id: '242288', name: 'Lovino, Carl Joseph T.', role: 'student' },
+    { id: '244872', name: 'Gabito, Rhea D.', role: 'student' },
+    { id: '244574', name: 'Parras, Christian Paul E.', role: 'student' },
+    { id: '242905', name: 'Bido, Zanjoe M.', role: 'student' },
+    { id: '243191', name: 'Pelembergo, Paul Zairosh', role: 'student' },
+    { id: '241666', name: 'Adrayan, Rey-an A.', role: 'student' },
+    { id: '243364', name: 'Arce, Rowecker Brent', role: 'student' },
+    { id: '245866', name: 'Kent Cedrick O. Celajes', role: 'student' },
+    { id: '235828', name: 'Kent Jeanne S. De Leon', role: 'student' },
+    { id: '243644', name: 'Raizalyn Omela', role: 'student' },
+    { id: '241649', name: 'Corong, Jasthen M.', role: 'student' },
+    { id: '240456', name: 'Cardeño, Jose Manuel M.', role: 'student' },
+    { id: '240439', name: 'Magdaraog, Dranreb D.', role: 'student' },
+    { id: '241096', name: 'Martinico, Maris D.', role: 'student' },
+    { id: '241661', name: 'Formaran, John Francis C.', role: 'student' },
+    { id: '245647', name: 'Pajanostan, Stephanie D.', role: 'student' },
+    { id: '246238', name: 'Comia, Regine A.', role: 'student' },
+    {id: '123456',  name: 'maem niks', role: 'teacher'}
+];
+
+function login() {
+    const usernameInput = document.getElementById("username").value.trim().toLowerCase();
+    const passwordInput = document.getElementById("password").value.trim();
+    const errorMsg = document.getElementById("error");
+
+    // Find user by name (case-insensitive) and check ID
+    const user = users.find(u => u.name.toLowerCase() === usernameInput && u.id === passwordInput);
+
+    if (!user) {
+        errorMsg.textContent = "Invalid name or ID number!";
+        return;
+    }
+
+    // Redirect based on role
+    if(user.role === "student"){
+        window.location.href = "students.html";
+    } else if(user.role === "teacher"){
+        window.location.href = "teachers.html";
+    }
+}
+</script>
+
+</body>
+</html>
